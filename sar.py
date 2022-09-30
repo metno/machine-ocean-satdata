@@ -109,4 +109,8 @@ def sar_params(sar_fn, longitude, latitude, normalize=True, vv=True):
         # Normalize NRCS
         s0 = normalize_nrcs(s0, inc)
 
+    lon, lat = n.get_geolocation_grids()
+
+    # Find pixels at desired location (input longitude and latitude variables)
+
     return s0, inc, az, pol
