@@ -44,6 +44,28 @@ def normalize_nrcs(s0, inc):
     """
     return (s0 + symfunc(inc))/2.
 
+def find_nearest_value(arr, val):
+    """ Element in nd array `arr` closest to the scalar value `val`
+
+    Parameters
+    ==========
+    arr : nd array
+    val : scalar value
+    """
+    idx = np.abs(arr - val).argmin()
+    return arr.flat[idx]
+
+def find_nearest_index(arr, val):
+    """ Index of element in nd array `arr` closest to the scalar value `val`
+
+    Parameters
+    ==========
+    arr : nd array
+    val : scalar value
+    """
+    idx = np.abs(arr - val).argmin()
+    return idx
+
 def sar_params(sar_fn, longitude, latitude, normalize=True, vv=True):
     """ Estimate SAR parameters at given location.
 
@@ -112,5 +134,11 @@ def sar_params(sar_fn, longitude, latitude, normalize=True, vv=True):
     lon, lat = n.get_geolocation_grids()
 
     # Find pixels at desired location (input longitude and latitude variables)
+    #lon_idx = find_nearest_index(lon, longitude)
+    #lat_idx = find_nearest_index(lat, latitude)
+    
+    #print(lon_idx)
+    #print(lat_idx)
 
+    #return s0[lon_idx][lat_idx], inc[lon_idx][lat_idx], az[lon_idx][lat_idx], pol[lon_idx][lat_idx]
     return s0, inc, az, pol
