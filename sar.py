@@ -44,17 +44,35 @@ def normalize_nrcs(s0, inc):
     """
     return (s0 + symfunc(inc))/2.
 
-def sar_params(sar_fn, longitude, latitude, normalize=True, vv=True):
+def find_nearest_value(arr, val):
+    """ Element in nd array `arr` closest to the scalar value `val`
+
+    Parameters
+    ==========
+    arr : nd array
+    val : scalar value
+    """
+    idx = np.abs(arr - val).argmin()
+    return arr.flat[idx]
+
+def find_nearest_index(arr, val):
+    """ Index of element in nd array `arr` closest to the scalar value `val`
+
+    Parameters
+    ==========
+    arr : nd array
+    val : scalar value
+    """
+    idx = np.abs(arr - val).argmin()
+    return idx
+
+def sar_params(sar_fn, normalize=True, vv=True):
     """ Estimate SAR parameters at given location.
 
     Parameters
     ==========
     sar_fn : string
         Full path to SAR dataset.
-    longitude : float
-        Geographical longitude in degrees.
-    latitude : float
-        Geographical latitude in degrees.
     normalize : bool
         True (default) if the NRCS should be normalized to 30 degrees
         incidence angle, currently following Topouzelis et al. (2016),
@@ -71,6 +89,10 @@ def sar_params(sar_fn, longitude, latitude, normalize=True, vv=True):
         Radar look incidence angle at given location.
     az : float
         Radar look azimuth angle at given location.
+    lon : float
+        Geographical longitude in degrees.
+    lat : float
+        Geographical latitude in degrees.
     pol : string
         Radar polarization.
 
@@ -111,6 +133,4 @@ def sar_params(sar_fn, longitude, latitude, normalize=True, vv=True):
 
     lon, lat = n.get_geolocation_grids()
 
-    # Find pixels at desired location (input longitude and latitude variables)
-
-    return s0, inc, az, pol
+    return s0, inc, az, lon, lat, pol
