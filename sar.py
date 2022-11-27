@@ -66,7 +66,7 @@ def find_nearest_index(arr, val):
     idx = np.abs(arr - val).argmin()
     return idx
 
-def crop_sar_data(n, lon, lat, epsilon):
+def crop_sar_data(n, station_lon, station_lat, epsilon):
     """ Crop Nansat object to fit into given longitude/latitude limit
     
     Parameters
@@ -74,31 +74,34 @@ def crop_sar_data(n, lon, lat, epsilon):
     n : Nansat object 
     epsilon : float
         width/height of the new image (measured from the center)
-    lon : float
-        central longitud of the output image.
-    lat : float
-        central latitude of the output image 
+    station_lon : float
+        if provided, longitude of the station around which the image will be cropped.
+    station_lat : float
+        if provided, latitue of the station around which the image will be cropped.
         
     """
-    n.crop_lonlat(lonlim=[lon - epsilon, lon + epsilon], latlim=[lat - epsilon, lat + epsilon])
+    lonlim=[station_lon - epsilon, station_lon + epsilon]
+    latlim=[station_lat - epsilon, station_lat + epsilon]
+    
+    n.crop_lonlat(lonlim=lonlim, latlim=latlim)
     
 
-def sar_params(sar_fn, lon=None, lat=None, normalize=True, vv=True, epsilon=0.0005):
+def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=True, epsilon=0.0005):
     """ Estimate SAR parameters at given location.
 
     Parameters
     ==========
     sar_fn : string
         Full path to SAR dataset.
-    lon : float
-        central longitud of the output image.
-    lat : float
-        central latitude of the output image    
-    normalize : bool
+    station_lon : float, optional
+        if provided, longitude of the station around which the image will be cropped.
+    station_lat : float, optional
+        if provided, latitue of the station around which the image will be cropped.    
+    normalize : bool, optional
         True (default) if the NRCS should be normalized to 30 degrees
         incidence angle, currently following Topouzelis et al. (2016),
         eqs. (3) and (7).
-    vv : bool
+    vv : bool, optional
         True (default) if HH polarized NRCS should be converted to VV
         polarization.
 
@@ -110,9 +113,9 @@ def sar_params(sar_fn, lon=None, lat=None, normalize=True, vv=True, epsilon=0.00
         Radar look incidence angle of the cropped object.
     az : float
         Radar look azimuth of the cropped object.
-    lon : array of floats
+    grid_lons : array of floats
         Geographical longitudes in degrees of the cropped object.
-    lat : array of floats
+    grid_lats : array of floats
         Geographical latitudes in degrees of the cropped object.
     pol : string
         Radar polarization.
@@ -122,8 +125,8 @@ def sar_params(sar_fn, lon=None, lat=None, normalize=True, vv=True, epsilon=0.00
 
     n = Nansat(sar_fn)
     
-    if lon and lat:
-        crop_sar_data(n, lon, lat, epsilon)
+    if station_lon and station_lat:
+        crop_sar_data(n, station_lon, station_lat, epsilon)
 
     # Find band number of real valued HH or VV polarization NRCS
     try:
@@ -155,6 +158,6 @@ def sar_params(sar_fn, lon=None, lat=None, normalize=True, vv=True, epsilon=0.00
         # Normalize NRCS
         s0 = normalize_nrcs(s0, inc)
 
-    lon_grid, lat_grid = n.get_geolocation_grids()
+    grid_lons, grid_lats = n.get_geolocation_grids()
 
-    return s0, inc, az, lon_grid, lat_grid, pol
+    return s0, inc, az, grid_lons, grid_lats, pol
