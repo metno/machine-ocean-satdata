@@ -66,39 +66,42 @@ def find_nearest_index(arr, val):
     idx = np.abs(arr - val).argmin()
     return idx
 
-def crop_sar_data(n, lon, lat, epsilon):
+def crop_sar_data(n, station_lon, station_lat, epsilon):
     """ Crop Nansat object to fit into given longitude/latitude limit
     
     Parameters
     ==========
     n : Nansat object 
     epsilon : float
-        width/height of the new image (measured from the center)
-    lon : float
-        central longitud of the output image.
-    lat : float
-        central latitude of the output image 
+        Width/height of the new image (measured from the center)
+    station_lon : float
+        If provided, longitude of the station around which the image will be cropped.
+    station_lat : float
+        If provided, latitue of the station around which the image will be cropped.
         
     """
-    n.crop_lonlat(lonlim=[lon - epsilon, lon + epsilon], latlim=[lat - epsilon, lat + epsilon])
+    lonlim=[station_lon - epsilon, station_lon + epsilon]
+    latlim=[station_lat - epsilon, station_lat + epsilon]
+    
+    n.crop_lonlat(lonlim=lonlim, latlim=latlim)
     
 
-def sar_params(sar_fn, lon=None, lat=None, normalize=True, vv=True, epsilon=0.0005):
+def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=True, epsilon=0.0005):
     """ Estimate SAR parameters at given location.
 
     Parameters
     ==========
     sar_fn : string
         Full path to SAR dataset.
-    lon : float
-        central longitud of the output image.
-    lat : float
-        central latitude of the output image    
-    normalize : bool
+    station_lon : float, optional
+        If provided, longitude (in degrees) of the station around which the image will be cropped.
+    station_lat : float, optional
+        If provided, latitue (in degrees) of the station around which the image will be cropped.    
+    normalize : bool, optional
         True (default) if the NRCS should be normalized to 30 degrees
         incidence angle, currently following Topouzelis et al. (2016),
         eqs. (3) and (7).
-    vv : bool
+    vv : bool, optional
         True (default) if HH polarized NRCS should be converted to VV
         polarization.
 
@@ -110,20 +113,19 @@ def sar_params(sar_fn, lon=None, lat=None, normalize=True, vv=True, epsilon=0.00
         Radar look incidence angle of the cropped object.
     az : float
         Radar look azimuth of the cropped object.
-    lon : array of floats
+    grid_lons : array of floats
         Geographical longitudes in degrees of the cropped object.
-    lat : array of floats
+    grid_lats : array of floats
         Geographical latitudes in degrees of the cropped object.
     pol : string
         Radar polarization.
-
     """
     s0, inc, az, pol = None, None, None, None
 
     n = Nansat(sar_fn)
     
-    if lon and lat:
-        crop_sar_data(n, lon, lat, epsilon)
+    if station_lon and station_lat:
+        crop_sar_data(n, station_lon, station_lat, epsilon)
 
     # Find band number of real valued HH or VV polarization NRCS
     try:
@@ -155,6 +157,45 @@ def sar_params(sar_fn, lon=None, lat=None, normalize=True, vv=True, epsilon=0.00
         # Normalize NRCS
         s0 = normalize_nrcs(s0, inc)
 
-    lon_grid, lat_grid = n.get_geolocation_grids()
+    grid_lons, grid_lats = n.get_geolocation_grids()
 
-    return s0, inc, az, lon_grid, lat_grid, pol
+    return s0, inc, az, grid_lons, grid_lats, pol
+
+
+def get_idx_of_station_in_cropped_image(grid_lons, grid_lats, station_lat, station_lon):
+    """ Get the indices of the grid box in the cropped sar object with the shortest distance to the station.
+    
+    Parameters
+    ==========
+    grid_lons : array of floats
+        Geographical longitudes in degrees of the cropped object.
+    grid_lats : array of floats
+        Geographical latitudes in degrees of the cropped object.
+    station_lon : float
+        The station's longitude in degrees.
+    station_lat : float
+        The station's latitude in degrees.
+    
+    Returns
+    =======
+    x_idx: int
+        Index of the closest grid box along dimension 0.
+    y_idx: int
+        Index of the closest grid box along dimension 1.
+    """
+    x_idx = 0
+    y_idx = 0
+
+    dist = 9999
+    # Compute the distance between the station and each point of the grid
+    for i in range(grid_lats.shape[0]):
+        for j in range(grid_lats.shape[1]):
+            abslat = (grid_lats[i, j] - station_lat)**2
+            abslon = (grid_lons[i, j] - station_lon)**2
+            dist_ij = np.sqrt(abslat + abslon)
+            if dist_ij < dist:
+                dist = dist_ij
+                x_idx = i
+                y_idx = j
+                
+    return x_idx, y_idx
