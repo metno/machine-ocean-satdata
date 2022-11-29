@@ -155,11 +155,14 @@ def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=Tr
 
     if normalize:
         # Normalize NRCS
-        s0 = normalize_nrcs(s0, inc)
+        s0_norm = normalize_nrcs(s0, inc)
 
     grid_lons, grid_lats = n.get_geolocation_grids()
 
-    return s0, inc, az, grid_lons, grid_lats, pol
+    return s0, s0_norm, inc, az, grid_lons, grid_lats, pol
+
+
+
 
 
 def get_idx_of_station_in_cropped_image(grid_lons, grid_lats, station_lat, station_lon):
