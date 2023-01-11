@@ -66,7 +66,7 @@ def find_nearest_index(arr, val):
     idx = np.abs(arr - val).argmin()
     return idx
 
-def crop_sar_data(n, station_lon, station_lat, epsilon):
+def crop_sar_data(n, station_lon, station_lat, epsilon=None, crop_type='degrees'):
     """ Crop Nansat object to fit into given longitude/latitude limit
     
     Parameters
@@ -78,12 +78,20 @@ def crop_sar_data(n, station_lon, station_lat, epsilon):
         If provided, longitude of the station around which the image will be cropped.
     station_lat : float
         If provided, latitue of the station around which the image will be cropped.
-        
+    
+    Returns
+    =======
+    extent : x_offset - X offset in the original dataset y_offset - Y offset in the original dataset x_size
+    - width of the new dataset y_size - height of the new dataset
     """
     lonlim=[station_lon - epsilon, station_lon + epsilon]
     latlim=[station_lat - epsilon, station_lat + epsilon]
+
+    extent = n.crop_lonlat(lonlim=lonlim, latlim=latlim)
     
-    n.crop_lonlat(lonlim=lonlim, latlim=latlim)
+    return extent
+    
+
     
 
 def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=True, epsilon=0.0005):
@@ -109,6 +117,8 @@ def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=Tr
     =======
     s0 : float
         NRCS [dB] of the cropped object.
+    s0_norm : float
+        Normalized NRCS [dB] of the cropped object.
     inc : float
         Radar look incidence angle of the cropped object.
     az : float
