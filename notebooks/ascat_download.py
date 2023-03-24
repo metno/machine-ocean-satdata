@@ -57,7 +57,7 @@ for product in in_situ_obs[productname]["products"]:
     customisation # By calling the newly created customisation we will start the customisation process
     
     jobID= customisation._id
-    print(f"Started customisation process {jobID}", end="")
+    print(f"Started customisation process {jobID}", end="", flush=True)
     
     in_situ_obs[productname]["customisations"].append(customisation)
     
@@ -71,40 +71,40 @@ for product in in_situ_obs[productname]["products"]:
 
         if "DONE" in status:
             #print(f"SUCCESS")
-            print(".", end="")
+            print(".", end="", flush=True)
             break
         elif "ERROR" in status or 'KILLED' in status:
             #print(f"UNSUCCESS, exiting")
-            print("...UNSUCCESS...", end="")
+            print("...UNSUCCESS...", end="", flush=True)
             break
         elif "QUEUED" in status:
             #print(f"QUEUED")
-            print(".", end="")
+            print(".", end="", flush=True)
         elif "RUNNING" in status:
             #print(f"RUNNING")
-            print(".", end="")
+            print(".", end="", flush=True)
         elif "INACTIVE" in status:
             sleep_time = max(60*10, sleep_time*2)
-            print(f"INACTIVE, doubling status polling time to {sleep_time} (max 10 mins)")
+            print(f"INACTIVE, doubling status polling time to {sleep_time} (max 10 mins)", flush=True)
         time.sleep(sleep_time)
     
     print(f"...finished")
     
     if len(customisation.outputs) < 1:
-        print("...NO FILES AVAILABLE FOR DOWNLOADING...", end="")
+        print("...NO FILES AVAILABLE FOR DOWNLOADING...", end="", flush=True)
     else:
         nc, = fnmatch.filter(customisation.outputs, '*.nc')
 
         jobID= customisation._id
-        print(f"\tStarting to download the NetCDF output of the customisation {jobID}", end="")
+        print(f"\tStarting to download the NetCDF output of the customisation {jobID}", end="", flush=True)
 
         with customisation.stream_output(nc,) as stream, \
                 open(data_dir + stream.name, mode='wb') as fdst:
             in_situ_obs[productname]["nc_files"].append(stream.name)
             shutil.copyfileobj(stream, fdst)
 
-    print(f"...finished")
-    print(f'\tDeleting completed customisation {customisation} from {customisation.creation_time} UTC.')
+    print(f"...finished", flush=True)
+    print(f'\tDeleting completed customisation {customisation} from {customisation.creation_time} UTC.', flush=True)
     customisation.delete()
 
 print("All customisations completed and nc-files downloaded!")
