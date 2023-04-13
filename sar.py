@@ -66,7 +66,7 @@ def find_nearest_index(arr, val):
     idx = np.abs(arr - val).argmin()
     return idx
 
-def crop_sar_data(n, station_lon, station_lat, epsilon=None, crop_type='degrees'):
+def crop_sar_data(n, station_lon, station_lat, epsilon=None):
     """ Crop Nansat object to fit into given longitude/latitude limit
     
     Parameters
@@ -90,11 +90,41 @@ def crop_sar_data(n, station_lon, station_lat, epsilon=None, crop_type='degrees'
     extent = n.crop_lonlat(lonlim=lonlim, latlim=latlim)
     
     return extent
-    
 
+def crop_sar_data_xy(n, station_lat, station_lon, x_size, y_size):
+    """ Crop Nansat object to fit into given longitude/latitude limit
     
+    Parameters
+    ==========
+    n : Nansat object 
+    epsilon : float
+        Width/height of the new image (measured from the center)
+    station_lon : float
+        If provided, longitude of the station around which the image will be cropped.
+    station_lat : float
+        If provided, latitue of the station around which the image will be cropped.
+    x_size : int
+        Number of pixels in the x dimension of the cropped image.
+    y_size : int
+        Number of pixels in the y dimension of the cropped image.
+    
+    Returns
+    =======
+    extent : x_offset - X offset in the original dataset y_offset - Y offset in the original dataset x_size
+    - width of the new dataset y_size - height of the new dataset
+    """
+    grid_lons_original, grid_lats_original = n.get_geolocation_grids()
+    x, y = latlon2xy(grid_lats_original, grid_lons_original, station_lat, station_lon)
+    # Move to the center. In crop, 
+    # x_offset and y_offset correspond to the bottom-left corner
+    x_offset = x - np.round(x_size/2) - 1 
+    y_offset = y - np.round(x_size/2) - 1
 
-def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=True, epsilon=0.0005):
+    extent = n.crop(x_offset, y_offset, x_size, y_size, allow_larger=True)
+    
+    return extent
+
+def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=True, x_size=3, y_size=3):
     """ Estimate SAR parameters at given location.
 
     Parameters
@@ -112,6 +142,16 @@ def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=Tr
     vv : bool, optional
         True (default) if HH polarized NRCS should be converted to VV
         polarization.
+    x_size : int
+        Number of pixels in the x dimension of the cropped image.
+    y_size : int
+        Number of pixels in the y dimension of the cropped image.
+    grid_lats_original : array 
+        Geographical latitudes in degrees of the original input image.
+    grid_lons_original : array 
+        Geographical longitudes in degrees of the original input image.
+        
+        
 
     Returns
     =======
@@ -135,7 +175,14 @@ def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=Tr
     n = Nansat(sar_fn)
     
     if station_lon and station_lat:
-        crop_sar_data(n, station_lon, station_lat, epsilon)
+        #if (x is None) or (y is None): 
+        crop_sar_data_xy(
+            n=n,
+            station_lat=station_lat,
+            station_lon=station_lon,
+            x_size=x_size, 
+            y_size=y_size
+        )
 
     # Find band number of real valued HH or VV polarization NRCS
     try:
@@ -171,9 +218,33 @@ def sar_params(sar_fn, station_lon=None, station_lat=None, normalize=True, vv=Tr
 
     return s0, s0_norm, inc, az, grid_lons, grid_lats, pol
 
-
-
-
+def latlon2xy(grid_lats, grid_lons, station_lat, station_lon):
+    
+    """ Get the indices of station_lat and station_lon in grid_lats and grid_lons. 
+    Useful to find the indices of the buoy location in the image.
+    
+    Parameters
+    ==========
+    grid_lons : array of floats
+        Geographical longitudes in degrees of the cropped object.
+    grid_lats : array of floats
+        Geographical latitudes in degrees of the cropped object.
+    station_lon : float
+        The station's longitude in degrees.
+    station_lat : float
+        The station's latitude in degrees.
+    
+    Returns
+    =======
+    x_idx: int
+        Index of the closest grid box along dimension 0.
+    y_idx: int
+        Index of the closest grid box along dimension 1.
+    """
+    a = abs( grid_lats - station_lat) + abs( grid_lons - station_lon)    
+    y, x= np.unravel_index(a.argmin(), a.shape)  
+    
+    return x, y
 
 def get_idx_of_station_in_cropped_image(grid_lons, grid_lats, station_lat, station_lon):
     """ Get the indices of the grid box in the cropped sar object with the shortest distance to the station.
