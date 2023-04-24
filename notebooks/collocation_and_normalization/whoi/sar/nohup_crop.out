@@ -1,0 +1,72 @@
+Endurance_9
+SPURS2Pioneer_10
+
+Number of images that were not cropped:  0
+Pioneer_7
+Endurance_3
+Pioneer_8
+Endurance_4
+Irminger_3
+Pioneer_6
+Endurance_8
+Number of images that were not cropped:  0
+Irminger_7
+Number of images that were not cropped:  0
+CLIMODEPioneer_5Pioneer_3
+Irminger_6
+
+
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+SPURS1
+Number of images that were not cropped:  0
+Endurance_7
+SouthernOcean2
+Number of images that were not cropped:  0
+/home/paulinast/repos/github/machine-ocean-satdata/notebooks/collocation_and_normalization/whoi/../../../sar.py:211: RuntimeWarning: divide by zero encountered in log10
+  s0 = 10.*np.log10(s0)
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+Number of images that were not cropped:  0
+multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/modules/rhel8/conda/install/envs/production-10-2022/lib/python3.9/multiprocessing/pool.py", line 125, in worker
+    result = (True, func(*args, **kwds))
+  File "/modules/rhel8/conda/install/envs/production-10-2022/lib/python3.9/multiprocessing/pool.py", line 48, in mapstar
+    return list(map(*args))
+  File "/home/paulinast/repos/github/machine-ocean-satdata/notebooks/collocation_and_normalization/whoi/crop_sar.py", line 54, in crop_images_one_buoy
+    s0, s0_norm, inc, az, grid_lons, grid_lats, pol = sar.sar_params(
+  File "/home/paulinast/repos/github/machine-ocean-satdata/notebooks/collocation_and_normalization/whoi/../../../sar.py", line 179, in sar_params
+    crop_sar_data_xy(
+  File "/home/paulinast/repos/github/machine-ocean-satdata/notebooks/collocation_and_normalization/whoi/../../../sar.py", line 116, in crop_sar_data_xy
+    grid_lons_original, grid_lats_original = n.get_geolocation_grids()
+  File "/home/paulinast/repos/github/nansat/nansat/domain.py", line 407, in get_geolocation_grids
+    lon_vec, lat_vec = self.transform_points(x_grid.flatten(), y_grid.flatten(),
+  File "/home/paulinast/repos/github/nansat/nansat/domain.py", line 828, in transform_points
+    return self.vrt.transform_points(colVector, rowVector, dst2src=DstToSrc, dst_srs=dst_srs)
+  File "/home/paulinast/repos/github/nansat/nansat/vrt.py", line 1460, in transform_points
+    lonlat = np.array(lonlat)
+numpy.core._exceptions._ArrayMemoryError: Unable to allocate 9.67 GiB for an array with shape (432706209, 3) and data type float64
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/paulinast/repos/github/machine-ocean-satdata/notebooks/collocation_and_normalization/whoi/run_multi_crop_sar.py", line 15, in <module>
+    results = pool.map(crop_images_one_buoy, in_situ_obs.keys())
+  File "/modules/rhel8/conda/install/envs/production-10-2022/lib/python3.9/multiprocessing/pool.py", line 364, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+  File "/modules/rhel8/conda/install/envs/production-10-2022/lib/python3.9/multiprocessing/pool.py", line 771, in get
+    raise self._value
+numpy.core._exceptions._ArrayMemoryError: Unable to allocate 9.67 GiB for an array with shape (432706209, 3) and data type float64
+Command exited with non-zero status 1
+23897.19user 4054.80system 2:20:29elapsed 331%CPU (0avgtext+0avgdata 107905268maxresident)k
+1766888inputs+63240outputs (3388major+1836138986minor)pagefaults 0swaps
