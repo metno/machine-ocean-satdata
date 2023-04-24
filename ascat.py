@@ -63,11 +63,18 @@ def ascat_params(ascat_fn, station_lon=None, station_lat=None):
         'sigma0_trip_fore', 'sigma0_trip_mid', 'sigma0_trip_aft',
         'azi_angle_trip_fore', 'azi_angle_trip_mid', 'azi_angle_trip_aft',
         'inc_angle_trip_fore', 'inc_angle_trip_mid', 'inc_angle_trip_aft',
+        'start_sensing_time',
+        'stop_sensing_time'
     ]
     
     data_station = data.sel(lat=station_lat, lon=station_lon,  method='nearest')
     
     for param in list_of_params:
-        ascat_params_dict[param] = data_station[param].values.item()    
+        if param == 'start_sensing_time':
+            ascat_params_dict[param] = data_station.start_sensing_time  # Attr
+        elif param == 'stop_sensing_time':
+            ascat_params_dict[param] = data_station.stop_sensing_time  # Attr
+        else:    
+            ascat_params_dict[param] = data_station[param].values.item()  # Var
 
     return ascat_params_dict
