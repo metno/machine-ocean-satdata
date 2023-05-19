@@ -18,7 +18,7 @@ import sys
 
 ####
 
-productname = "Pioneer_5"
+productname = "Endurance_8"
 data_dir = "/lustre/storeB/project/IT/geout/machine-ocean/data_raw/metop/"
 
 ####
@@ -68,17 +68,17 @@ for product in in_situ_obs[productname]["products"]:
         customisation = datatailor.new_customisation(product, chain)
         print(f"Customisation {customisation._id} started.")
     except eumdac.datatailor.DataTailorError as error:
-        print(f"Error related to the Data Tailor: '{error.msg}'")
-        break
+        print(f"Error related to the Data Tailor: '{error}'")
+        continue
     except eumdac.EumdacError as error:
         print("Unexpected eumdac error:", error)
-        break
+        continue
     except requests.exceptions.HTTPError as error:
         print(f"HTTP error: '{error.msg}'")
-        break
+        continue
     except requests.exceptions.RequestException as error:
         print(f"Unexpected error: {error}")
-        break
+        continue
 
     status = "QUEUED"
     sleep_time = 10 # seconds
@@ -131,16 +131,16 @@ for product in in_situ_obs[productname]["products"]:
             in_situ_obs[productname]["nc_files"][str(product)] = stream.name
     except eumdac.customisation.CustomisationError as error:
         print(f"Data Tailor Error", error)
-        break
+        continue
     except eumdac.EumdacError as error:
         print("Unexpected eumdac error:", error)
-        break
+        continue
     except requests.exceptions.HTTPError as error:
         print(f"HTTP error: '{error.msg}'")
-        break
+        continue
     except requests.exceptions.RequestException as error:
         print(f"Unexpected error: {error}")
-        break
+        continue
 
     print(f"\tDeleting the customisation {jobID}")
 
@@ -148,16 +148,16 @@ for product in in_situ_obs[productname]["products"]:
         customisation.delete()
     except eumdac.customisation.CustomisationError as error:
         print("Customisation Error:", error)
-        break
+        continue
     except eumdac.EumdacError as error:
         print("Unexpected eumdac error:", error)
-        break
+        continue
     except requests.exceptions.HTTPError as error:
         print(f"HTTP error: '{error.msg}'")
-        break
+        continue
     except requests.exceptions.RequestException as error:
         print("Unexpected error:", error)
-        break
+        continue
 
     print(f"\tFinished dowloading the NetCDF output and deleted the customisation {jobID}", flush=True)
 
