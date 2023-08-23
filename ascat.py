@@ -8,6 +8,7 @@ From files in '/lustre/storeB/project/IT/geout/machine-ocean/data_raw/metop', af
 """
 
 import xarray as xr
+import numpy as np
 
 
 def ascat_params(ascat_fn, station_lon, station_lat):
@@ -133,8 +134,8 @@ def ascat_params_cnn(ascat_fn, station_lon:float, station_lat:float, nx:int=17, 
     
     # Fill in dict with parameters from the image
     ascat_params_dict = {}
-    ascat_params_dict['grid_lats_orig'] = data.lat.values
-    ascat_params_dict['grid_lons_orig'] = data.lon.values
+    ascat_params_dict['grid_lats_orig'] = ascat.lat.values
+    ascat_params_dict['grid_lons_orig'] = ascat.lon.values
     
     list_of_params = [
         'sigma0_trip_fore', 'sigma0_trip_mid', 'sigma0_trip_aft',
@@ -151,22 +152,22 @@ def ascat_params_cnn(ascat_fn, station_lon:float, station_lat:float, nx:int=17, 
     # Get the indices of the nearest grid box in ASCAT to the station
     lon_i, lat_i = np.nonzero(
         xr.where(
-            (data_ascat.lon==subset_ascat_station.lon.values) & (data_ascat.lat==subset_ascat_station.lat.values), 1, 0
+            (ascat.lon==ascat_station.lon.values) & (ascat.lat==ascat_station.lat.values), 1, 0
         ).data
     )
     
     # How many grid boxes on each side of the nearest station grid box
-    if divmod(dx, 2)==0:
-        dx2 = dx/2
+    if divmod(nx, 2)==0:
+        nx2 = nx/2
     else:
-        dx2 = (dx - 1)/2
+        nx2 = (nx - 1)/2
         
-    if divmod(dy, 2)==0:
-        dy2 = dy/2
+    if divmod(ny, 2)==0:
+        ny2 = ny/2
     else:
-        dy2 = (dy - 1)/2
+        ny2 = (ny - 1)/2
 
-    cropped_image = scat.isel(lat=slice(lat_i[0] - dy, lat_i[0] + dy + 1), lon=slice(lon_i[0] - dx, lon_i[0] + dx + 1))
+    cropped_image = ascat.isel(lat=slice(lat_i[0] - ny2, lat_i[0] + ny2 + 1), lon=slice(lon_i[0] - nx2, lon_i[0] + nx2 + 1))
     
     ascat_params_dict['lats_cropped_image'] = cropped_image['lat'].values
     ascat_params_dict['lons_cropped_image'] = cropped_image['lon'].values
