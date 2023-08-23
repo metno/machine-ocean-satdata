@@ -37,8 +37,8 @@ def daterange(start_date, end_date):
     for n in range(int((end_date - start_date).days)):
         yield start_date + timedelta(n)
 
-start_date = date(2011, 1, 1)
-end_date = date(2012, 1, 1)
+start_date = date(2015, 1, 1)
+end_date = date(2015, 7, 1)
 
 print("Retrieving for period {} to {}".format(start_date.strftime("%Y%m%d"), end_date.strftime("%Y%m%d")))
 
@@ -54,8 +54,8 @@ for date in daterange(start_date, end_date):
             "date": date_str,
             "expver": "1",
             "levtype": "sfc",
-            "param": "165.128/166.128",
-            "step": "0/3/6/9",
+            "param": "148.128/151.128/167.128/168.128/3.228",
+            "step": "0/1/2/3/4/5/6/7/8/9/10/11",
             "stream": "oper",
             "time": "00/12",
             "type": "fc",
